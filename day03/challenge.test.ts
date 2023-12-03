@@ -12,15 +12,12 @@ const grid: Cell[][] = fs
 const extractNumbers = (row: Cell[]): Cell[][] => {
   const result: Cell[][] = [];
   let current: Cell[] = [];
-  let inNumber = false;
-  row.forEach((cell: Cell, i: number) => {
+  row.forEach((cell: Cell) => {
     if (Number.isInteger(parseInt(cell.c))) {
-      inNumber = true;
       current.push(cell);
-    } else if (inNumber) {
+    } else if (current.length > 0) {
       if (current.length > 0) result.push(current);
       current = [];
-      inNumber = false;
     }
   });
   if (current.length > 0) result.push(current);

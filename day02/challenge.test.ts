@@ -1,7 +1,7 @@
 import fs from "fs";
 
 const rows = fs
-.readFileSync(`${__dirname}/input.txt`, 'utf-8')
+  .readFileSync(`${__dirname}/input.txt`, "utf-8")
   .split("\n")
   .filter((l) => l);
 
@@ -32,7 +32,7 @@ describe("day02", () => {
     const answer = rows
       .map((l) => {
         const [, ...hands] = l.split(/[:;]/);
-        const limits: Record<string, number> = { red: 0, green: 0, blue: 0 };
+        const limits: Record<string, number> = {};
 
         hands.forEach((hand) => {
           hand
@@ -40,7 +40,7 @@ describe("day02", () => {
             .split(",")
             .map((type) => type.trim().split(" "))
             .forEach(([n, c]) => {
-              limits[c] = Math.max(limits[c], parseInt(n));
+              limits[c] = Math.max(limits[c] || 0, parseInt(n));
             });
         });
 

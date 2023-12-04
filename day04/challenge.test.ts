@@ -1,7 +1,7 @@
 import fs from "fs";
 
 const score = (a: number): number => (a < 2 ? a : Math.pow(2, a - 1));
-type Card = [name: number, cards: { winners: number[]; numbers: number[] }];
+type Card = { gameNumber: number; winners: number[]; numbers: number[] };
 
 const cards: Card[] = fs
   .readFileSync(`${__dirname}/input.txt`)
@@ -20,13 +20,13 @@ const cards: Card[] = fs
           .split(/\s+/)
           .map((h) => parseInt(h))
       );
-    return [gameNumber, { winners, numbers }];
+    return { gameNumber, winners, numbers };
   });
 
 describe("day04", () => {
   test("answer1", () => {
     const part1 = cards
-      .map(([, { winners, numbers }]) => {
+      .map(({ winners, numbers }) => {
         const matches = numbers.filter((c) => winners.includes(c));
         return score(matches.length);
       })
@@ -36,16 +36,16 @@ describe("day04", () => {
   });
 
   test("answer2", () => {
-    const cardToScore = new Map<number, { score: number; matches: number[] }>(
-      cards.map(([number, { winners, numbers }]) => {
-        const matches = numbers.filter((c) => winners.includes(c));
-        return [number, { score: matches.length, matches }];
+    const cardToScore = new Map<number, number>(
+      cards.map(({ gameNumber, winners, numbers }) => {
+        const matches = numbers.filter((c) => winners.includes(c)).length;
+        return [gameNumber, matches];
       })
     );
 
-    const cardsToProcess = Array.from(cardToScore.keys()).map(
+    const cardsToNewCards = Array.from(cardToScore.keys()).map(
       (card): [card: number, spawn: number[]] => {
-        const nextCardScore = cardToScore.get(card).score;
+        const nextCardScore = cardToScore.get(card);
         const newCards = Array.from(
           { length: nextCardScore },
           (v, k) => k + card + 1
@@ -57,12 +57,12 @@ describe("day04", () => {
     const cache: Map<number, number> = new Map();
 
     for (let index = 0; index < 100; index++) {
-      for (const [thisCard, spawnCards] of cardsToProcess) {
+      for (const [thisCard, newCards] of cardsToNewCards) {
         const canAdd =
           cache.get(thisCard) === undefined &&
-          spawnCards.every((n) => cache.get(n) !== undefined);
+          newCards.every((n) => cache.get(n) !== undefined);
         if (canAdd) {
-          const score = spawnCards
+          const score = newCards
             .map((c) => cache.get(c))
             .reduce((acc, i) => acc + i, 1);
           cache.set(thisCard, score);
@@ -70,14 +70,10 @@ describe("day04", () => {
       }
     }
 
-    const result = cardsToProcess
+    const result = cardsToNewCards
       .map(([card]) => cache.get(card))
       .reduce((acc, i) => acc + i);
 
     expect(result).toStrictEqual(5704953);
-  });
-
-  test("other", () => {
-    expect(true).toBe(true);
   });
 });
